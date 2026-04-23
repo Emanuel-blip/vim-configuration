@@ -5,7 +5,7 @@
   \ \ / /(_)|  \/  |
    \ V / | || |\/| |
     \_/  |_||_|  |_|   E N G I N E
-
+```
 # 🛠️ PORTABLE ENGINEERING VIM (PEV)
 
 ![Vim Version](https://img.shields.io/badge/Vim-9.1+-green.svg)
