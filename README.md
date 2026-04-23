@@ -1,11 +1,5 @@
 # ⚡ VIM-ENGINE-PRO
 
-```ascii
-  __   _  _  __  __
-  \ \ / /(_)|  \/  |
-   \ V / | || |\/| |
-    \_/  |_||_|  |_|   E N G I N E
-```
 # 🛠️ PORTABLE ENGINEERING VIM (PEV)
 
 ![Vim Version](https://img.shields.io/badge/Vim-9.1+-green.svg)
@@ -40,7 +34,7 @@ This repository provides an automated "Infrastructure-as-Code" approach to your 
 Run the smart provisioner. It will detect your environment, download static binaries (Node.js), compile Vim, and link your configs.
 
 ```bash
-git clone [https://github.com/YOUR_USERNAME/dotfiles.git](https://github.com/YOUR_USERNAME/dotfiles.git)
-cd dotfiles
+git clone https://github.com/Emanuel-blip/vim-configuration.git
+cd vim-configuration
 chmod +x install.sh
 ./install.sh
