@@ -8,17 +8,27 @@
 " 1. Core Editor Settings
 " -----------------------------------------------------------------------------
 function! s:SetupCoreSettings()
-    set expandtab                          " Use spaces instead of tabs
-    set ruler                              " Show cursor position in status line
-    set shortmess+=I                       " Disable the default Vim intro message
-    set lazyredraw                         " Don't redraw screen during macros/scripts
-    set incsearch                          " Highlight search matches as you type
-    set ttyfast                            " Improve terminal scrolling/redrawing
-    set list                               " Show invisible characters
+    set expandtab                " Use spaces instead of tabs
+    set ruler                    " Show cursor position in status line
+    set shortmess+=I             " Disable the default Vim intro message
+    set lazyredraw               " Don't redraw screen during macros/scripts
+    set incsearch                " Highlight search matches as you type
+    set ttyfast                  " Improve terminal scrolling/redrawing
+    set list                     " Show invisible characters
+    set incsearch                " Highlight search matches as you type
+    set directory=~/.vim/tmp     " Move swp file to /tmp
+
+    " Turn syntax highlighting on
+    set t_Co=256
+    syntax on
+    filetype plugin indent on
+
+    " intelligent comments
+    set comments=sl:/*,mb:\ *,elx:\ */
+
     set listchars=tab:»·,trail:·,nbsp:⍽
 
-    filetype plugin indent on    " Enable filetype-specific detection
-    syntax on                    " Enable syntax highlighting
+
 endfunction
 call s:SetupCoreSettings()
 
@@ -164,7 +174,7 @@ inoremap <expr> <CR> getline('.')[col('.')-2:col('.')-1] == '{}' ? "\<CR>\<CR>\<
 
 " Smart Jump-out: Tab through pairs or perform normal Tab
 function! s:SkipPair()
-    let l:char = getline('.')[col('.') - 1]
+
     if index([')', '}', ']', '"', "'", '>'], l:char) != -1
         return "\<Right>"
     else
