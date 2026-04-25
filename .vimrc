@@ -1,7 +1,7 @@
 " =============================================================================
 " VIM CONFIGURATION
 " Author: Yenovq Hakobyan
-" Purpose: Development environment for C/C++, JS, LaTeX, and Verilog
+" Purpose: Development environment for C/C++, JS and XeLaTeX
 " =============================================================================
 
 " -----------------------------------------------------------------------------
@@ -19,17 +19,15 @@ function! s:SetupCoreSettings()
     set directory=~/.vim/tmp     " Move swp file to /tmp
 
     " Turn syntax highlighting on
-    set t_Co=256
     syntax on
     filetype plugin indent on
 
-    " intelligent comments
+    " Intelligent comments
     set comments=sl:/*,mb:\ *,elx:\ */
-
     set listchars=tab:»·,trail:·,nbsp:⍽
 
-
 endfunction
+
 call s:SetupCoreSettings()
 
 " -----------------------------------------------------------------------------
@@ -52,6 +50,9 @@ function! s:InitializePlugins()
 endfunction
 
 if empty(glob('~/.vim/autoload/plug.vim'))
+    " Install vim-plug with curl if not present
+    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
     echo "Warning: vim-plug not found. Please install it to load plugins."
 else
     call s:InitializePlugins()
@@ -75,14 +76,37 @@ function! s:ApplyUIStyles()
     " Refine completion menu appearance
     highlight Pmenu ctermbg=236 ctermfg=251
     highlight PmenuSel ctermbg=240 ctermfg=255
-    highlight CocFloating ctermbg=235
+    highlight PmenuSbar ctermbg=236
+    highlight PmenuKind ctermbg=236 ctermfg=251
+    highlight PmenuThumb ctermbg=240
+    highlight PmenuExtra ctermbg=236 ctermfg=251
+    highlight PmenuKindFunction ctermbg=236 ctermfg=Green
+    highlight PmenuKindVariable ctermbg=236 ctermfg=Cyan
+    highlight PmenuKindClass ctermbg=236 ctermfg=Blue
+
 
     " Highlight diagnostic icons for CoC
     highlight CocSuggestTypeInfo ctermfg=Cyan guifg=#1890ff
     highlight CocSymbolDefault ctermfg=Magenta guifg=#fb4934
+    highlight CocSymbolEnum ctermfg=Yellow guifg=#fabd2f
+    highlight CocSymbolInterface ctermfg=Green guifg=#b8bb26
+    highlight CocSymbolClass ctermfg=Blue guifg=#83a598
+    highlight CocSymbolMethod ctermfg=Red guifg=#fb4934
+    highlight CocError ctermbg=red guibg=red
+    highlight CocWarning ctermbg=yellow guibg=yellow
+    highlight CocHint ctermbg=blue guibg=blue
+    highlight CocFloating ctermbg=235
+    highlight CocFloatingBorder ctermbg=235 ctermfg=Yellow
+    highlight CocMenuSel ctermbg=240 ctermfg=255
+    highlight CocMenuSbar ctermbg=236
+    highlight CocMenuThumb ctermbg=240
+    highlight CocMenuExtra ctermbg=236 ctermfg=251
+    highlight CocMenuKind ctermbg=236 ctermfg=251
 
     " Visualize bad whitespace (e.g., non-breaking spaces)
-    highlight BadWhitespace ctermbg=red guibg=red
+    highlight BadWhitespace cterm=bold gui=bold
+    highlight link BadWhitespace Error
+
     match BadWhitespace /\%u00a0/
 endfunction
 call s:ApplyUIStyles()
@@ -117,36 +141,38 @@ function! s:InstigateCodingStyle()
     setlocal shiftwidth=8
     setlocal textwidth=80
     setlocal cindent
-    setlocal colorcolumn=80
+    setlocal colorcolumn=+1
 endfunction
 
 " Profile for Web Technologies (JS/HTML)
 function! s:ToggleHtmlTools()
+    setlocal lazyredraw
+    setlocal expandtab
     setlocal tabstop=2
     setlocal shiftwidth=2
     setlocal textwidth=80
-    setlocal colorcolumn=81
-    setlocal expandtab
+    setlocal colorcolumn=+1
 endfunction
 
 " Profile for LaTeX (Scientific writing)
-function! s:ConfigureVimTeX()
-    let g:vimtex_quickfix_open_on_warning = 0
-    let g:vimtex_quickfix_mode = 2
-    let g:vimtex_compiler_method = 'latexmk'
-    let g:vimtex_compiler_latexmk = {
-        \ 'build_dir'  : '',
-        \ 'callback'   : 1,
-        \ 'continuous' : 1,
-        \ 'executable' : 'latexmk',
-        \ 'options'    : [
-        \   '-pdfxe',
-        \   '-verbose',
-        \   '-file-line-error',
-        \   '-synctex=1',
-        \   '-interaction=nonstopmode',
-        \ ],
-        \ }
+function! s:ConfigureVimtex()
+     let g:vimtex_view_method = 'zathura'
+     let g:vimtex_quickfix_open_on_warning = 0
+     let g:vimtex_quickfix_mode = 2
+     let g:vimtex_compiler_method = 'latexmk'
+     let g:vimtex_compiler_latexmk = {
+                  \ 'build_dir'  : '',
+                  \ 'callback'   : 1,
+                  \ 'continuous' : 1,
+                  \ 'executable' : 'latexmk',
+                  \ 'options'    : [
+                  \   '-pdfxe',
+                  \   '-verbose',
+                  \   '-file-line-error',
+                  \   '-synctex=1',
+                  \   '-interaction=nonstopmode',
+                  \ ],
+                  \ }
 endfunction
 
 " Automation: Apply profiles based on file extension
@@ -154,9 +180,8 @@ augroup FileTypeProfiles
     autocmd!
     autocmd FileType c,cpp call s:InstigateCodingStyle()
     autocmd FileType html,javascript call s:ToggleHtmlTools()
-    autocmd FileType tex call s:ConfigureVimTeX()
+    autocmd FileType tex call s:ConfigureVimtex()
 augroup END
-
 
 " -----------------------------------------------------------------------------
 " 7. Typing Assistants and Smart Mappings
@@ -173,8 +198,8 @@ inoremap ' ''<Left>
 inoremap <expr> <CR> getline('.')[col('.')-2:col('.')-1] == '{}' ? "\<CR>\<CR>\<Up>" : "\<CR>"
 
 " Smart Jump-out: Tab through pairs or perform normal Tab
-function! s:SkipPair()
-
+ function! SkipPair()
+    let l:char = getline('.')[col('.') - 1]
     if index([')', '}', ']', '"', "'", '>'], l:char) != -1
         return "\<Right>"
     else
@@ -182,4 +207,4 @@ function! s:SkipPair()
     endif
 endfunction
 
-inoremap <expr> <Tab> <SID>SkipPair()
+inoremap <expr> <Tab> SkipPair()
