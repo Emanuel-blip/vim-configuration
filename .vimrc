@@ -17,6 +17,7 @@ function! s:SetupCoreSettings()
     set list                     " Show invisible characters
     set incsearch                " Highlight search matches as you type
     set directory=~/.vim/tmp     " Move swp file to /tmp
+    set updatetime=300           " Faster diagnostic updates for CoC
 
     " Turn syntax highlighting on
     syntax on
@@ -33,6 +34,17 @@ call s:SetupCoreSettings()
 " -----------------------------------------------------------------------------
 " 2. Plugin Management (vim-plug)
 " -----------------------------------------------------------------------------
+
+if empty(glob('~/.vim/autoload/plug.vim'))
+    " Install vim-plug with curl if not present
+    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+else
+    call s:InitializePlugins()
+endif
+
+
 function! s:InitializePlugins()
     call plug#begin('~/.vim/plugged')
 
@@ -49,14 +61,6 @@ function! s:InitializePlugins()
     call plug#end()
 endfunction
 
-if empty(glob('~/.vim/autoload/plug.vim'))
-    " Install vim-plug with curl if not present
-    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    echo "Warning: vim-plug not found. Please install it to load plugins."
-else
-    call s:InitializePlugins()
-endif
 
 " -----------------------------------------------------------------------------
 " 3. External Tool Configurations
@@ -115,7 +119,7 @@ call s:ApplyUIStyles()
 " 5. Language and Localization (Armenian Support)
 " -----------------------------------------------------------------------------
 function! ToggleArmenian()
-    if &keymap == "armenian-phonetic_utf-8"
+    if &keymap ==# "armenian-phonetic_utf-8"
         set keymap=
         echo "Keymap: English"
     else
@@ -123,6 +127,7 @@ function! ToggleArmenian()
         echo "Keymap: Armenian"
     endif
 endfunction
+
 
 " Mappings for language switching
 nnoremap <C-L> :call ToggleArmenian()<CR>
@@ -134,6 +139,7 @@ inoremap <C-L> <C-O>:call ToggleArmenian()<CR>
 
 " Profile for C and C++ (Kernel/Strict style)
 function! s:InstigateCodingStyle()
+    setlocal formatoptions-=ro " Prevent auto-inserting comments on newline
     setlocal lazyredraw
     setlocal expandtab
     setlocal softtabstop=8
