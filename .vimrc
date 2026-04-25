@@ -35,16 +35,6 @@ call s:SetupCoreSettings()
 " 2. Plugin Management (vim-plug)
 " -----------------------------------------------------------------------------
 
-if empty(glob('~/.vim/autoload/plug.vim'))
-    " Install vim-plug with curl if not present
-    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-else
-    call s:InitializePlugins()
-endif
-
-
 function! s:InitializePlugins()
     call plug#begin('~/.vim/plugged')
 
@@ -61,6 +51,14 @@ function! s:InitializePlugins()
     call plug#end()
 endfunction
 
+if empty(glob('~/.vim/autoload/plug.vim'))
+    " Install vim-plug with curl if not present
+    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+else
+    call s:InitializePlugins()
+endif
 
 " -----------------------------------------------------------------------------
 " 3. External Tool Configurations
