@@ -2,111 +2,154 @@
 
 # =============================================================================
 # VIM ENVIRONMENT PROVISIONER (No-Package-Manager Edition)
-# Targets: Node.js, Vim-Plug, LaTeX, and Nerd Fonts
+# Author: Yenovq Hakobyan
+# Targets: Node.js, Vim-Plug, LaTeX, Nerd Fonts, and Vim (Source Build)
 # =============================================================================
+
+# Enable Strict Mode
+set -euo pipefail
+IFS=$'\n\t'
 
 # Define local paths
 LOCAL_BIN="$HOME/.local/bin"
 LOCAL_SRC="$HOME/.local/src"
-mkdir -p "$LOCAL_BIN" "$LOCAL_SRC"
+FONT_DIR="$HOME/.local/share/fonts"
 
-# Add local bin to current session path
+# Export path for the current session
 export PATH="$LOCAL_BIN:$PATH"
 
+# =============================================================================
+# Helper Functions
+# =============================================================================
+
+log_info() { echo -e "\e[34m[*]\e[0m $1"; }
+log_success() { echo -e "\e[32m[+]\e[0m $1"; }
+log_error() { echo -e "\e[31m[!]\e[0m $1"; >&2; }
+
+check_dependencies() {
+    local deps=("curl" "tar" "unzip" "git" "make" "gcc" "python3")
+    local missing=()
+    for dep in "${deps[@]}"; do
+        if ! command -v "$dep" &> /dev/null; then
+            missing+=("$dep")
+        fi
+    done
+
+    if [ ${#missing[@]} -ne 0 ]; then
+        log_error "Missing required system dependencies: ${missing[*]}"
+        log_error "Please install them via your system package manager (e.g., apt, dnf, pacman) and rerun."
+        exit 1
+    fi
+}
+
+# =============================================================================
+# Provisioning Steps
+# =============================================================================
+
 echo "--- Starting Smart Provisioning ---"
+mkdir -p "$LOCAL_BIN" "$LOCAL_SRC"
+check_dependencies
 
 # 1. Install Node.js (Static Binary)
-# Required for CoC and Copilot
 if ! command -v node &> /dev/null; then
-    echo "[*] Installing Node.js via static binary..."
-    NODE_VER="v20.11.0" # Stable LTS
+    log_info "Installing Node.js via static binary..."
+    NODE_VER="v20.11.0"
     NODE_DIST="node-$NODE_VER-linux-x64"
+    NODE_ARCHIVE="$NODE_DIST.tar.xz"
     
     cd "$LOCAL_SRC"
-    curl -LO "https://nodejs.org/dist/$NODE_VER/$NODE_DIST.tar.xz"
-    tar -xJf "$NODE_DIST.tar.xz"
+    curl -fSLO "https://nodejs.org/dist/$NODE_VER/$NODE_ARCHIVE"
+    tar -xJf "$NODE_ARCHIVE"
     
-    # Link binaries to local bin
+    # Link binaries to local bin (adding npx as well)
     ln -sf "$LOCAL_SRC/$NODE_DIST/bin/node" "$LOCAL_BIN/node"
     ln -sf "$LOCAL_SRC/$NODE_DIST/bin/npm" "$LOCAL_BIN/npm"
-    echo "[+] Node.js installed at $LOCAL_BIN/node"
+    ln -sf "$LOCAL_SRC/$NODE_DIST/bin/npx" "$LOCAL_BIN/npx"
+    
+    rm -f "$NODE_ARCHIVE"
+    log_success "Node.js installed at $LOCAL_BIN/node"
 else
-    echo "[ok] Node.js already exists"
+    log_success "Node.js already exists ($(node -v))"
 fi
 
 # 2. Install Vim-Plug
-# The foundation for your .vimrc structure
 if [ ! -f "$HOME/.vim/autoload/plug.vim" ]; then
-    echo "[*] Installing vim-plug..."
+    log_info "Installing vim-plug..."
     curl -fLo "$HOME/.vim/autoload/plug.vim" --create-dirs \
         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    echo "[+] vim-plug installed."
+    log_success "vim-plug installed."
 else
-    echo "[ok] vim-plug already exists"
+    log_success "vim-plug already exists"
 fi
 
 # 3. Install Fira Code Nerd Font
-# Critical for your KindLabels and icons
-FONT_DIR="$HOME/.local/share/fonts"
-if [ ! -d "$FONT_DIR" ] || [ -z "$(ls -A $FONT_DIR)" ]; then
-    echo "[*] Installing FiraCode Nerd Font..."
+if ! ls "$FONT_DIR"/FiraCode* &> /dev/null; then
+    log_info "Installing FiraCode Nerd Font..."
     mkdir -p "$FONT_DIR"
     cd "$LOCAL_SRC"
-    curl -LO https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.zip
-    unzip -o FiraCode.zip -d "$FONT_DIR"
-    # Update font cache if fc-cache exists, else skip
-    command -v fc-cache &> /dev/null && fc-cache -f "$FONT_DIR"
-    echo "[+] Fonts installed to $FONT_DIR"
+    curl -fSLO https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.zip
+    unzip -qo FiraCode.zip -d "$FONT_DIR"
+    
+    rm -f FiraCode.zip
+    if command -v fc-cache &> /dev/null; then
+        fc-cache -f "$FONT_DIR"
+    fi
+    log_success "Fonts installed to $FONT_DIR"
 else
-    echo "[ok] Fonts directory populated"
+    log_success "FiraCode Nerd Font already installed"
 fi
 
 # 4. Install/Upgrade Vim from Source
-# This part ensures you have the latest version with +python3 and +terminal support
-VIM_VERSION="master" # Pulls the latest stable development version
-
-if [[ "$(vim --version | head -n 1)" != *"Vim 9.1"* ]]; then
-    echo "[*] Current Vim is outdated or missing. Compiling latest Vim..."
-
-    # Create source directory if not exists
-    mkdir -p "$LOCAL_SRC"
+# Checks for version >= 9.1 AND ensures python3 support is compiled in
+if ! command -v vim &> /dev/null || \
+   [[ "$(vim --version | head -n 1)" != *"Vim 9.1"* ]] || \
+   ! vim --version | grep -q "+python3"; then
+    
+    log_info "Compiling latest Vim with Python3 support..."
     cd "$LOCAL_SRC"
 
-    # Clone Vim repository (shallow clone for speed)
     if [ ! -d "vim" ]; then
         git clone --depth 1 https://github.com/vim/vim.git
+        cd vim
+    else
+        cd vim
+        # Ensure a clean state before pulling updates
+        git fetch --depth 1 origin master
+        git reset --hard origin/master
+        make distclean # Clean previous build artifacts
     fi
 
-    cd vim
-    git pull
+    # Fallback for python3-config if standard command isn't in path
+    PY3_CONF_DIR=$(python3-config --configdir 2>/dev/null || echo "")
 
-    # Configure build:
-    # --prefix: installs to your local home directory
-    # --with-features=huge: enables all advanced features
-    # --enable-python3interp: critical for AI/CoC plugins
+    log_info "Configuring build..."
     ./configure --prefix="$HOME/.local" \
                 --with-features=huge \
                 --enable-multibyte \
                 --enable-python3interp=yes \
-                --with-python3-config-dir=$(python3-config --configdir) \
+                ${PY3_CONF_DIR:+--with-python3-config-dir="$PY3_CONF_DIR"} \
                 --enable-gui=no \
                 --enable-cscope \
                 --enable-terminal
 
-    echo "[*] Building Vim (this may take a minute)..."
-    make -j$(nproc)
-    sudo make install
+    log_info "Building Vim (utilizing $(nproc) cores)..."
+    make -j"$(nproc)"
+    
+    # CRITICAL FIX: Removed sudo. $HOME/.local belongs to the user.
+    make install
 
-    echo "[+] Vim $(./src/vim --version | head -n 1) installed to $LOCAL_BIN/vim"
+    log_success "Vim $(./src/vim --version | head -n 1 | awk '{print $5}') installed to $LOCAL_BIN/vim"
 else
-    echo "[ok] Vim is already up to date."
+    log_success "Vim is up to date and has +python3 support."
 fi
 
 # 5. Finalize Vim Setup
-echo "[*] Triggering Vim PlugInstall and CoC updates..."
-# Run vim in ex-mode to install plugins without opening the UI
-vim +PlugInstall +qall
+log_info "Triggering Vim PlugInstall..."
+# Temporarily disable strict mode in case a plugin install throws a non-zero exit code
+set +e
+vim -E -s -c "source ~/.vimrc" -c PlugInstall -c qa
+set -e
 
-echo "--- Provisioning Complete ---"
+echo -e "\n\e[32m--- Provisioning Complete ---\e[0m"
 echo "IMPORTANT: Ensure your ~/.bashrc or ~/.profile contains:"
-echo "export PATH=\"\$HOME/.local/bin:\$PATH\""
+echo -e "\e[33mexport PATH=\"\$HOME/.local/bin:\$PATH\"\e[0m"
