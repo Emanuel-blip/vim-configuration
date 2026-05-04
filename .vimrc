@@ -48,7 +48,6 @@ function! s:InitializePlugins()
 
         " Better C++ syntax (optional but useful)
         Plug 'bfrg/vim-cpp-modern'
-        Plug 'jackguo380/vim-lsp-cxx-highlight'
 
         " Web Development
         Plug 'alvan/vim-closetag'
@@ -122,6 +121,7 @@ function! s:ApplyUIStyles()
 
         match BadWhitespace /\%u00a0/
 endfunction
+
 call s:ApplyUIStyles()
 
 " -----------------------------------------------------------------------------
@@ -182,8 +182,13 @@ function! s:IntializeLanguageServer()
         " Go to definition
         nmap <silent> gd <Plug>(coc-definition)
 
-        hi default link LspCxxHlGroupEnumConstant Constant
-        hi default link LspCxxHlGroupMemberVariable Identifier
+        function! ShowDocumentation()
+                if CocAction('hasProvider', 'hover')
+                        call CocActionAsync('doHover')
+                else
+                        call feedkeys('K', 'in')
+                endif
+        endfunction
 endfunction
 
 
