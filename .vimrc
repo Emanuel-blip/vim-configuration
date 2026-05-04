@@ -2,30 +2,31 @@
 " VIM CONFIGURATION
 " Author: Yenovq Hakobyan
 " Purpose: Development environment for C/C++, JS and XeLaTeX
+" Created: 2026-06-01
 " =============================================================================
 
 " -----------------------------------------------------------------------------
 " 1. Core Editor Settings
 " -----------------------------------------------------------------------------
 function! s:SetupCoreSettings()
-    set expandtab                " Use spaces instead of tabs
-    set ruler                    " Show cursor position in status line
-    set shortmess+=I             " Disable the default Vim intro message
-    set lazyredraw               " Don't redraw screen during macros/scripts
-    set incsearch                " Highlight search matches as you type
-    set ttyfast                  " Improve terminal scrolling/redrawing
-    set list                     " Show invisible characters
-    set incsearch                " Highlight search matches as you type
-    set directory=~/.vim/tmp     " Move swp file to /tmp
-    set updatetime=300           " Faster diagnostic updates for CoC
+        set expandtab                " Use spaces instead of tabs
+        set ruler                    " Show cursor position in status line
+        set shortmess+=I             " Disable the default Vim intro message
+        set lazyredraw               " Don't redraw screen during macros/scripts
+        set incsearch                " Highlight search matches as you type
+        set ttyfast                  " Improve terminal scrolling/redrawing
+        set list                     " Show invisible characters
+        set incsearch                " Highlight search matches as you type
+        set directory=~/.vim/tmp     " Move swp file to /tmp
+        set updatetime=300           " Faster diagnostic updates for CoC
 
-    " Turn syntax highlighting on
-    syntax on
-    filetype plugin indent on
+        " Turn syntax highlighting on
+        syntax on
+        filetype plugin indent on
 
-    " Intelligent comments
-    set comments=sl:/*,mb:\ *,elx:\ */
-    set listchars=tab:»·,trail:·,nbsp:⍽
+        " Intelligent comments
+        set comments=sl:/*,mb:\ *,elx:\ */
+        set listchars=tab:»·,trail:·,nbsp:⍽
 
 endfunction
 
@@ -36,28 +37,35 @@ call s:SetupCoreSettings()
 " -----------------------------------------------------------------------------
 
 function! s:InitializePlugins()
-    call plug#begin('~/.vim/plugged')
+        call plug#begin('~/.vim/plugged')
 
-    " LSP and Intelligence
-    Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'github/copilot.vim'
+        " LSP and Intelligence
+        Plug 'neoclide/coc.nvim', {'branch': 'release'}
+        Plug 'github/copilot.vim'
 
-    " Document Preparation
-    Plug 'lervag/vimtex'
+        " Document Preparation
+        Plug 'lervag/vimtex'
 
-    " Web Development
-    Plug 'alvan/vim-closetag'
+        " Better C++ syntax (optional but useful)
+        Plug 'bfrg/vim-cpp-modern'
+        Plug 'jackguo380/vim-lsp-cxx-highlight'
 
-    call plug#end()
+        " Web Development
+        Plug 'alvan/vim-closetag'
+
+        " Vim Development
+        Plug 'tpope/vim-surround'
+
+        call plug#end()
 endfunction
 
 if empty(glob('~/.vim/autoload/plug.vim'))
-    " Install vim-plug with curl if not present
-    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+        " Install vim-plug with curl if not present
+        silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+                                \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 else
-    call s:InitializePlugins()
+        call s:InitializePlugins()
 endif
 
 " -----------------------------------------------------------------------------
@@ -75,41 +83,44 @@ let g:coc_border_join_chars = ['─', '│', '┌', '┐', '┘', '└']
 " 4. Visuals and Interface Highlighting
 " -----------------------------------------------------------------------------
 function! s:ApplyUIStyles()
-    " Refine completion menu appearance
-    highlight Pmenu ctermbg=236 ctermfg=251
-    highlight PmenuSel ctermbg=240 ctermfg=255
-    highlight PmenuSbar ctermbg=236
-    highlight PmenuKind ctermbg=236 ctermfg=251
-    highlight PmenuThumb ctermbg=240
-    highlight PmenuExtra ctermbg=236 ctermfg=251
-    highlight PmenuKindFunction ctermbg=236 ctermfg=Green
-    highlight PmenuKindVariable ctermbg=236 ctermfg=Cyan
-    highlight PmenuKindClass ctermbg=236 ctermfg=Blue
+        " Refine completion menu appearance
+        highlight Pmenu ctermbg=236 ctermfg=251
+        highlight PmenuSel ctermbg=240 ctermfg=255
+        highlight PmenuSbar ctermbg=236
+        highlight PmenuKind ctermbg=236 ctermfg=251
+        highlight PmenuThumb ctermbg=240
+        highlight PmenuExtra ctermbg=236 ctermfg=251
+
+        highlight PmenuKindDefault ctermbg=236 ctermfg=251
+        highlight PmenuKindKeyword ctermbg=236 ctermfg=Yellow
+        highlight PmenuKindFunction ctermbg=236 ctermfg=Green
+        highlight PmenuKindVariable ctermbg=236 ctermfg=Cyan
+        highlight PmenuKindClass ctermbg=236 ctermfg=Blue
 
 
-    " Highlight diagnostic icons for CoC
-    highlight CocSuggestTypeInfo ctermfg=Cyan guifg=#1890ff
-    highlight CocSymbolDefault ctermfg=Magenta guifg=#fb4934
-    highlight CocSymbolEnum ctermfg=Yellow guifg=#fabd2f
-    highlight CocSymbolInterface ctermfg=Green guifg=#b8bb26
-    highlight CocSymbolClass ctermfg=Blue guifg=#83a598
-    highlight CocSymbolMethod ctermfg=Red guifg=#fb4934
-    highlight CocError ctermbg=red guibg=red
-    highlight CocWarning ctermbg=yellow guibg=yellow
-    highlight CocHint ctermbg=blue guibg=blue
-    highlight CocFloating ctermbg=235
-    highlight CocFloatingBorder ctermbg=235 ctermfg=Yellow
-    highlight CocMenuSel ctermbg=240 ctermfg=255
-    highlight CocMenuSbar ctermbg=236
-    highlight CocMenuThumb ctermbg=240
-    highlight CocMenuExtra ctermbg=236 ctermfg=251
-    highlight CocMenuKind ctermbg=236 ctermfg=251
+        " Highlight diagnostic icons for CoC
+        highlight CocSuggestTypeInfo ctermfg=Cyan guifg=#1890ff
+        highlight CocSymbolDefault ctermfg=Magenta guifg=#fb4934
+        highlight CocSymbolEnum ctermfg=Yellow guifg=#fabd2f
+        highlight CocSymbolInterface ctermfg=Green guifg=#b8bb26
+        highlight CocSymbolClass ctermfg=Blue guifg=#83a598
+        highlight CocSymbolMethod ctermfg=Red guifg=#fb4934
+        highlight CocError ctermbg=red guibg=red
+        highlight CocWarning ctermbg=yellow guibg=yellow
+        highlight CocHint ctermbg=blue guibg=blue
+        highlight CocFloating ctermbg=235
+        highlight CocFloatingBorder ctermbg=235 ctermfg=Yellow
+        highlight CocMenuSel ctermbg=240 ctermfg=255
+        highlight CocMenuSbar ctermbg=236
+        highlight CocMenuThumb ctermbg=240
+        highlight CocMenuExtra ctermbg=236 ctermfg=251
+        highlight CocMenuKind ctermbg=236 ctermfg=251
 
-    " Visualize bad whitespace (e.g., non-breaking spaces)
-    highlight BadWhitespace cterm=bold gui=bold
-    highlight link BadWhitespace Error
+        " Visualize bad whitespace (e.g., non-breaking spaces)
+        highlight BadWhitespace cterm=bold gui=bold
+        highlight link BadWhitespace Error
 
-    match BadWhitespace /\%u00a0/
+        match BadWhitespace /\%u00a0/
 endfunction
 call s:ApplyUIStyles()
 
@@ -117,13 +128,13 @@ call s:ApplyUIStyles()
 " 5. Language and Localization (Armenian Support)
 " -----------------------------------------------------------------------------
 function! ToggleArmenian()
-    if &keymap ==# "armenian-phonetic_utf-8"
-        set keymap=
-        echo "Keymap: English"
-    else
-        set keymap=armenian-phonetic_utf-8
-        echo "Keymap: Armenian"
-    endif
+        if &keymap ==# "armenian-phonetic_utf-8"
+                set keymap=
+                echo "Keymap: English"
+        else
+                set keymap=armenian-phonetic_utf-8
+                echo "Keymap: Armenian"
+        endif
 endfunction
 
 
@@ -137,54 +148,82 @@ inoremap <C-L> <C-O>:call ToggleArmenian()<CR>
 
 " Profile for C and C++ (Kernel/Strict style)
 function! s:InstigateCodingStyle()
-    setlocal formatoptions-=ro " Prevent auto-inserting comments on newline
-    setlocal lazyredraw
-    setlocal expandtab
-    setlocal softtabstop=8
-    setlocal tabstop=8
-    setlocal shiftwidth=8
-    setlocal textwidth=80
-    setlocal cindent
-    setlocal colorcolumn=+1
+        setlocal formatoptions-=ro " Prevent auto-inserting comments on newline
+        setlocal lazyredraw
+        setlocal expandtab
+        setlocal softtabstop=8
+        setlocal tabstop=8
+        setlocal shiftwidth=8
+        setlocal textwidth=80
+        setlocal cindent
+        setlocal colorcolumn=+1
+        call s:IntializeLanguageServer()
 endfunction
+
+function! s:IntializeLanguageServer()
+        " Rename symbol across the whole project
+        nmap <leader>rn <Plug>(coc-rename)
+
+        " Apply Code Action to the current line (e.g., fix-its, adding missing includes)
+        nmap <leader>ac <Plug>(coc-codeaction-line)
+        vmap <leader>ac <Plug>(coc-codeaction-selected)
+
+        " Formatting selected code
+        xmap <leader>f  <Plug>(coc-format-selected)
+        nmap <leader>f  <Plug>(coc-format-selected)
+
+        " Navigate diagnostics (errors/warnings)
+        nmap <silent> [g <Plug>(coc-diagnostic-prev)
+        nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+        " Highlight the symbol under the cursor and its usages
+        autocmd CursorHold * silent call CocActionAsync('highlight')
+
+        " Go to definition
+        nmap <silent> gd <Plug>(coc-definition)
+
+        hi default link LspCxxHlGroupEnumConstant Constant
+        hi default link LspCxxHlGroupMemberVariable Identifier
+endfunction
+
 
 " Profile for Web Technologies (JS/HTML)
 function! s:ToggleHtmlTools()
-    setlocal lazyredraw
-    setlocal expandtab
-    setlocal tabstop=2
-    setlocal shiftwidth=2
-    setlocal textwidth=80
-    setlocal colorcolumn=+1
+        setlocal lazyredraw
+        setlocal expandtab
+        setlocal tabstop=2
+        setlocal shiftwidth=2
+        setlocal textwidth=80
+        setlocal colorcolumn=+1
 endfunction
 
 " Profile for LaTeX (Scientific writing)
 function! s:ConfigureVimtex()
-     let g:vimtex_view_method = 'zathura'
-     let g:vimtex_quickfix_open_on_warning = 0
-     let g:vimtex_quickfix_mode = 2
-     let g:vimtex_compiler_method = 'latexmk'
-     let g:vimtex_compiler_latexmk = {
-                  \ 'build_dir'  : '',
-                  \ 'callback'   : 1,
-                  \ 'continuous' : 1,
-                  \ 'executable' : 'latexmk',
-                  \ 'options'    : [
-                  \   '-pdfxe',
-                  \   '-verbose',
-                  \   '-file-line-error',
-                  \   '-synctex=1',
-                  \   '-interaction=nonstopmode',
-                  \ ],
-                  \ }
+        let g:vimtex_view_method = 'zathura'
+        let g:vimtex_quickfix_open_on_warning = 0
+        let g:vimtex_quickfix_mode = 2
+        let g:vimtex_compiler_method = 'latexmk'
+        let g:vimtex_compiler_latexmk = {
+                     \ 'build_dir'  : '',
+                     \ 'callback'   : 1,
+                     \ 'continuous' : 1,
+                     \ 'executable' : 'latexmk',
+                     \ 'options'    : [
+                     \   '-pdfxe',
+                     \   '-verbose',
+                     \   '-file-line-error',
+                     \   '-synctex=1',
+                     \   '-interaction=nonstopmode',
+                     \ ],
+                     \ }
 endfunction
 
 " Automation: Apply profiles based on file extension
 augroup FileTypeProfiles
-    autocmd!
-    autocmd FileType c,cpp call s:InstigateCodingStyle()
-    autocmd FileType html,javascript call s:ToggleHtmlTools()
-    autocmd FileType tex call s:ConfigureVimtex()
+        autocmd!
+        autocmd FileType c,cpp call s:InstigateCodingStyle()
+        autocmd FileType html,javascript call s:ToggleHtmlTools()
+        autocmd FileType tex call s:ConfigureVimtex()
 augroup END
 
 " -----------------------------------------------------------------------------
@@ -202,13 +241,13 @@ inoremap ' ''<Left>
 inoremap <expr> <CR> getline('.')[col('.')-2:col('.')-1] == '{}' ? "\<CR>\<CR>\<Up>" : "\<CR>"
 
 " Smart Jump-out: Tab through pairs or perform normal Tab
- function! SkipPair()
-    let l:char = getline('.')[col('.') - 1]
-    if index([')', '}', ']', '"', "'", '>'], l:char) != -1
-        return "\<Right>"
-    else
-        return "\<Tab>"
-    endif
+function! SkipPair()
+        let l:char = getline('.')[col('.') - 1]
+        if index([')', '}', ']', '"', "'", '>'], l:char) != -1
+                return "\<Right>"
+        else
+                return "\<Tab>"
+        endif
 endfunction
 
 inoremap <expr> <Tab> SkipPair()
