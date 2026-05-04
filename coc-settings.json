@@ -1,0 +1,34 @@
+{
+        "suggest.floatConfig": { "border": true, "rounded": true },
+        "signature.floatConfig": { "border": true, "rounded": true },
+        "hover.floatConfig": { "border": true, "rounded": true },
+        "suggest.enablePreselect": true,
+
+        "suggest.detailField": "preview",
+        "suggest.labelMaxLength": 60,
+        "suggest.noselect": true,
+        "semanticTokens.enable": true,
+        "languageserver": {
+                "ccls": {
+                        "command": "ccls",
+                        "filetypes": ["c", "cpp", "objc", "objcpp"],
+                        "rootPatterns": [".ccls", "compile_commands.json", ".git/", ".hg/"],
+                        "initializationOptions": {
+                                "cache": {
+                                        "directory": "/tmp/ccls",
+                                        "format": "binary",
+                                        "retainInMemory": 2
+                                },
+                                "index": {
+                                        "threads": 0,
+                                        "onChange": true,
+                                        "trackDependency": 2,
+                                        "maxPendingIndexRequest": 20
+                                },
+                                "highlight": {
+                                        "lsRanges": true
+                                }
+                        }
+                }
+        }
+}
