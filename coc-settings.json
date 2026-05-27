@@ -7,12 +7,12 @@
         "suggest.detailField": "preview",
         "suggest.labelMaxLength": 60,
         "suggest.noselect": true,
-        "semanticTokens.enable": true,
+        "semanticTokens.enable": false,
         "languageserver": {
                 "ccls": {
                         "command": "ccls",
                         "filetypes": ["c", "cpp", "objc", "objcpp"],
-                        "rootPatterns": [".ccls", "compile_commands.json", ".git/", ".hg/"],
+                        "rootPatterns": [".ccls", ".git/", "compile_commands.json", ".hg/"],
                         "initializationOptions": {
                                 "cache": {
                                         "directory": "/tmp/ccls",
@@ -26,7 +26,7 @@
                                         "maxPendingIndexRequest": 20
                                 },
                                 "highlight": {
-                                        "lsRanges": true
+                                        "lsRanges": false
                                 }
                         }
                 }
