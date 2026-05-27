@@ -1,7 +1,6 @@
 " =============================================================================
 " VIM CONFIGURATION
-" Author: Yenovq Hakobyan
-" Purpose: Development environment for C/C++, JS and XeLaTeX
+" Author: Yenovq Hakobyan " Purpose: Development environment for C/C++, JS and XeLaTeX
 " Created: 2026-06-01
 " =============================================================================
 
@@ -19,6 +18,8 @@ function! s:SetupCoreSettings()
         set incsearch                " Highlight search matches as you type
         set directory=~/.vim/tmp     " Move swp file to /tmp
         set updatetime=300           " Faster diagnostic updates for CoC
+        set synmaxcol=300            " Limit syntax highlighting to 300 columns for performance
+        set redrawtime=1500          " Increase redraw time limit for complex files
 
         " Turn syntax highlighting on
         syntax on
@@ -86,34 +87,39 @@ function! s:ApplyUIStyles()
         highlight Pmenu ctermbg=236 ctermfg=251
         highlight PmenuSel ctermbg=240 ctermfg=255
         highlight PmenuSbar ctermbg=236
-        highlight PmenuKind ctermbg=236 ctermfg=251
         highlight PmenuThumb ctermbg=240
+
+        highlight PmenuKind ctermbg=236 ctermfg=251
         highlight PmenuExtra ctermbg=236 ctermfg=251
 
-        highlight PmenuKindDefault ctermbg=236 ctermfg=251
-        highlight PmenuKindKeyword ctermbg=236 ctermfg=Yellow
+        highlight PmenuKindKeyword  ctermbg=236 ctermfg=Yellow
         highlight PmenuKindFunction ctermbg=236 ctermfg=Green
         highlight PmenuKindVariable ctermbg=236 ctermfg=Cyan
-        highlight PmenuKindClass ctermbg=236 ctermfg=Blue
+        highlight PmenuKindClass    ctermbg=236 ctermfg=Blue
 
 
-        " Highlight diagnostic icons for CoC
-        highlight CocSuggestTypeInfo ctermfg=Cyan guifg=#1890ff
-        highlight CocSymbolDefault ctermfg=Magenta guifg=#fb4934
-        highlight CocSymbolEnum ctermfg=Yellow guifg=#fabd2f
-        highlight CocSymbolInterface ctermfg=Green guifg=#b8bb26
-        highlight CocSymbolClass ctermfg=Blue guifg=#83a598
-        highlight CocSymbolMethod ctermfg=Red guifg=#fb4934
-        highlight CocError ctermbg=red guibg=red
-        highlight CocWarning ctermbg=yellow guibg=yellow
-        highlight CocHint ctermbg=blue guibg=blue
-        highlight CocFloating ctermbg=235
+        " CoC diagnostics
+        highlight CocSuggestTypeInfo ctermfg=Cyan
+
+        highlight CocSymbolDefault   ctermfg=Magenta
+        highlight CocSymbolEnum      ctermfg=Yellow
+        highlight CocSymbolInterface ctermfg=Green
+        highlight CocSymbolClass     ctermfg=Blue
+        highlight CocSymbolMethod    ctermfg=Red
+
+        highlight CocError   ctermbg=red
+        highlight CocWarning ctermbg=yellow
+        highlight CocHint    ctermbg=blue
+
+        highlight CocFloating       ctermbg=235
         highlight CocFloatingBorder ctermbg=235 ctermfg=Yellow
-        highlight CocMenuSel ctermbg=240 ctermfg=255
-        highlight CocMenuSbar ctermbg=236
+
+        highlight CocMenuSel   ctermbg=240 ctermfg=255
+        highlight CocMenuSbar  ctermbg=236
         highlight CocMenuThumb ctermbg=240
         highlight CocMenuExtra ctermbg=236 ctermfg=251
-        highlight CocMenuKind ctermbg=236 ctermfg=251
+        highlight CocMenuKind  ctermbg=236 ctermfg=251
+
 
         " Visualize bad whitespace (e.g., non-breaking spaces)
         highlight BadWhitespace cterm=bold gui=bold
