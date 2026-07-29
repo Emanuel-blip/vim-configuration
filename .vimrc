@@ -1,264 +1,359 @@
 " =============================================================================
 " VIM CONFIGURATION
-" Author: Yenovq Hakobyan " Purpose: Development environment for C/C++, JS and XeLaTeX
+" Author: Yenovq Hakobyan
+" Purpose: Development environment for C/C++, JS and XeLaTeX
 " Created: 2026-06-01
 " =============================================================================
 
 " -----------------------------------------------------------------------------
 " 1. Core Editor Settings
 " -----------------------------------------------------------------------------
-function! s:SetupCoreSettings()
-        set expandtab                " Use spaces instead of tabs
-        set ruler                    " Show cursor position in status line
-        set shortmess+=I             " Disable the default Vim intro message
-        set lazyredraw               " Don't redraw screen during macros/scripts
-        set incsearch                " Highlight search matches as you type
-        set ttyfast                  " Improve terminal scrolling/redrawing
-        set list                     " Show invisible characters
-        set incsearch                " Highlight search matches as you type
-        set directory=~/.vim/tmp     " Move swp file to /tmp
-        set updatetime=300           " Faster diagnostic updates for CoC
-        set synmaxcol=300            " Limit syntax highlighting to 300 columns for performance
-        set redrawtime=1500          " Increase redraw time limit for complex files
 
-        " Turn syntax highlighting on
-        syntax on
-        filetype plugin indent on
+set expandtab                        " Use spaces instead of tabs
+set ruler                            " Show cursor position in status line
+set lazyredraw                       " Don't redraw screen during macros/scripts
+set incsearch                        " Highlight search matches as you type
+set list                             " Show invisible characters
+set listchars=tab:»·,trail:·,nbsp:⍽
+set directory=~/.vim/tmp             " Move swp files to a centralized directory
+set updatetime=300                   " Faster diagnostic updates (LSP)
+set synmaxcol=300                    " Limit syntax highlighting to 300 columns
+set redrawtime=1500                  " Timeout for complex syntax rendering
 
-        " Intelligent comments
-        set comments=sl:/*,mb:\ *,elx:\ */
-        set listchars=tab:»·,trail:·,nbsp:⍽
+" Intelligent comment formatting
+set comments=sl:/*,mb:\ *,elx:\ */
 
-endfunction
+" Turn on syntax and filetype detection
+syntax on
+filetype plugin indent on
 
-call s:SetupCoreSettings()
+" Create swap directory if it doesn't exist
+if !isdirectory(expand(&directory))
+        call mkdir(expand(&directory), 'p')
+endif
 
 " -----------------------------------------------------------------------------
 " 2. Plugin Management (vim-plug)
 " -----------------------------------------------------------------------------
 
-function! s:InitializePlugins()
-        call plug#begin('~/.vim/plugged')
+let s:plug_path = expand('~/.vim/autoload/plug.vim')
+if !filereadable(s:plug_path)
+    echo "Installing vim-plug..."
+    silent execute '!curl -fLo ' . s:plug_path . ' --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
 
-        " LSP and Intelligence
-        Plug 'neoclide/coc.nvim', {'branch': 'release'}
+call plug#begin('~/.vim/plugged')
+        " C++ Specific Plugins
+        Plug 'bfrg/vim-cpp-modern'  " Enhanced syntax for modern C++
+
+        " Language Server Protocol
+        Plug 'yegappan/lsp'
+
+        " AI Assistance
         Plug 'github/copilot.vim'
 
         " Document Preparation
         Plug 'lervag/vimtex'
 
-        " Better C++ syntax (optional but useful)
-        Plug 'bfrg/vim-cpp-modern'
-
         " Web Development
-        Plug 'alvan/vim-closetag'
+        Plug 'alvan/vim-closetag' " Close tags in HTML
 
-        " Vim Development
+        " Editing Utilities
         Plug 'tpope/vim-surround'
-
-        call plug#end()
-endfunction
-
-if empty(glob('~/.vim/autoload/plug.vim'))
-        " Install vim-plug with curl if not present
-        silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-                                \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-        autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-else
-        call s:InitializePlugins()
-endif
+call plug#end()
 
 " -----------------------------------------------------------------------------
-" 3. External Tool Configurations
+" 3. External Tool Configuration
 " -----------------------------------------------------------------------------
+
 " Link Copilot to the Node.js executable
 let g:copilot_node_command = '/home/yenovq/.nix-profile/bin/node'
 
-" Prettier and CoC global settings
-let g:coc_diagnostic_enable = 1
-let g:coc_border_join_chars = ['─', '│', '┌', '┐', '┘', '└']
-
+" VimTeX must be configured at script level (read at plugin-load time)
+let g:vimtex_view_method = 'zathura'
+let g:vimtex_quickfix_open_on_warning = 0
+let g:vimtex_quickfix_mode = 2
+let g:vimtex_compiler_method = 'latexmk'
+let g:vimtex_compiler_latexmk = {
+                \ 'build_dir'  : '',
+                \ 'callback'   : 1,
+                \ 'continuous' : 1,
+                \ 'executable' : 'latexmk',
+                \ 'options'    : [
+                \   '-pdfxe',
+                \   '-verbose',
+                \   '-file-line-error',
+                \   '-synctex=1',
+                \   '-interaction=nonstopmode',
+                \ ],
+                \ }
 
 " -----------------------------------------------------------------------------
 " 4. Visuals and Interface Highlighting
 " -----------------------------------------------------------------------------
-function! s:ApplyUIStyles()
-        " Refine completion menu appearance
-        highlight Pmenu ctermbg=236 ctermfg=251
-        highlight PmenuSel ctermbg=240 ctermfg=255
-        highlight PmenuSbar ctermbg=236
-        highlight PmenuThumb ctermbg=240
 
-        highlight PmenuKind ctermbg=236 ctermfg=251
-        highlight PmenuExtra ctermbg=236 ctermfg=251
+function! s:ApplyUIStyles() abort
+    " -- Completion Menu (Pmenu) - Modern Deep Dark Theme --
+    highlight Pmenu      guibg=#1e1e2e guifg=#cdd6f4 ctermbg=235  ctermfg=252
+    highlight PmenuSel   guibg=#313244 guifg=#89b4fa gui=bold ctermbg=238  ctermfg=255  cterm=bold
+    highlight PmenuSbar  guibg=#181825 ctermbg=235
+    highlight PmenuThumb guibg=#585b70 ctermbg=243
+    highlight PmenuKind  guibg=#1e1e2e guifg=#a6adc8 ctermbg=235  ctermfg=245
+    highlight PmenuExtra guibg=#1e1e2e guifg=#7f849c ctermbg=235  ctermfg=243
 
-        highlight PmenuKindKeyword  ctermbg=236 ctermfg=Yellow
-        highlight PmenuKindFunction ctermbg=236 ctermfg=Green
-        highlight PmenuKindVariable ctermbg=236 ctermfg=Cyan
-        highlight PmenuKindClass    ctermbg=236 ctermfg=Blue
+    " -- Kind-specific colors (Catppuccin inspired vibrant colors) --
+    highlight PmenuKindKeyword   guibg=#1e1e2e guifg=#f38ba8 ctermbg=235 ctermfg=168
+    highlight PmenuKindFunction  guibg=#1e1e2e guifg=#a6e3a1 ctermbg=235 ctermfg=114
+    highlight PmenuKindVariable  guibg=#1e1e2e guifg=#89b4fa ctermbg=235 ctermfg=117
+    highlight PmenuKindClass     guibg=#1e1e2e guifg=#f9e2af ctermbg=235 ctermfg=179
+    highlight PmenuKindModule    guibg=#1e1e2e guifg=#cba6f7 ctermbg=235 ctermfg=176
+    highlight PmenuKindField     guibg=#1e1e2e guifg=#94e2d5 ctermbg=235 ctermfg=73
+    highlight PmenuKindStruct    guibg=#1e1e2e guifg=#fab387 ctermbg=235 ctermfg=215
+    highlight PmenuKindInterface guibg=#1e1e2e guifg=#a6e3a1 ctermbg=235 ctermfg=150
+    highlight PmenuKindEnum      guibg=#1e1e2e guifg=#f9e2af ctermbg=235 ctermfg=180
 
+    " -- LSP Diagnostic Signs --
+    highlight LspDiagSignErrorText   guifg=#f38ba8 guibg=NONE gui=bold ctermfg=167 ctermbg=NONE cterm=bold
+    highlight LspDiagSignWarningText guifg=#f9e2af guibg=NONE gui=NONE ctermfg=214 ctermbg=NONE cterm=NONE
+    highlight LspDiagSignInfoText    guifg=#89b4fa guibg=NONE gui=NONE ctermfg=75  ctermbg=NONE cterm=NONE
+    highlight LspDiagSignHintText    guifg=#94e2d5 guibg=NONE gui=NONE ctermfg=108 ctermbg=NONE cterm=NONE
 
-        " CoC diagnostics
-        highlight CocSuggestTypeInfo ctermfg=Cyan
+    " -- LSP Diagnostic Inline --
+    highlight LspDiagInlineError   gui=undercurl guisp=#f38ba8 cterm=undercurl ctermfg=167
+    highlight LspDiagInlineWarning gui=undercurl guisp=#f9e2af cterm=undercurl ctermfg=214
+    highlight LspDiagInlineInfo    gui=underline guisp=#89b4fa cterm=underline ctermfg=75
+    highlight LspDiagInlineHint    gui=underline guisp=#94e2d5 cterm=underline ctermfg=108
 
-        highlight CocSymbolDefault   ctermfg=Magenta
-        highlight CocSymbolEnum      ctermfg=Yellow
-        highlight CocSymbolInterface ctermfg=Green
-        highlight CocSymbolClass     ctermfg=Blue
-        highlight CocSymbolMethod    ctermfg=Red
+    " -- LSP Popups (hover, diagnostics) --
+    highlight LspPopup        guibg=#1e1e2e guifg=#cdd6f4 ctermbg=236 ctermfg=252
+    highlight LspPopupBorder  guibg=#1e1e2e guifg=#cba6f7 ctermbg=236 ctermfg=99
 
-        highlight CocError   ctermbg=red
-        highlight CocWarning ctermbg=yellow
-        highlight CocHint    ctermbg=blue
+    " -- LSP References & Inlay Hints --
+    highlight LspTextRef  guibg=#313244 guifg=NONE gui=NONE ctermbg=238 ctermfg=NONE cterm=NONE
+    highlight LspReadRef  guibg=#313244 guifg=NONE gui=NONE ctermbg=238 ctermfg=NONE cterm=NONE
+    highlight LspWriteRef guibg=#45475a guifg=NONE gui=bold ctermbg=52  ctermfg=NONE cterm=bold
+    highlight LspInlayHintsType  guifg=#7f849c guibg=NONE gui=italic ctermfg=243 ctermbg=NONE cterm=italic
+    highlight LspInlayHintsParam guifg=#7f849c guibg=NONE gui=italic ctermfg=243 ctermbg=NONE cterm=italic
 
-        highlight CocFloating       ctermbg=235
-        highlight CocFloatingBorder ctermbg=235 ctermfg=Yellow
+    " -- LSP Symbol Highlighting --
+    highlight LspSymbolName  guifg=#89b4fa gui=bold ctermfg=117 cterm=bold
+    highlight LspSymbolRange guibg=#313244 gui=NONE ctermbg=238 cterm=NONE
+    highlight LspSigActiveParameter guifg=#fab387 gui=bold,underline ctermfg=215 cterm=bold,underline
 
-        highlight CocMenuSel   ctermbg=240 ctermfg=255
-        highlight CocMenuSbar  ctermbg=236
-        highlight CocMenuThumb ctermbg=240
-        highlight CocMenuExtra ctermbg=236 ctermfg=251
-        highlight CocMenuKind  ctermbg=236 ctermfg=251
-
-
-        " Visualize bad whitespace (e.g., non-breaking spaces)
-        highlight BadWhitespace cterm=bold gui=bold
-        highlight link BadWhitespace Error
-
-        match BadWhitespace /\%u00a0/
+    " -- Misc --
+    highlight BadWhitespace cterm=bold gui=bold
+    highlight link BadWhitespace Error
 endfunction
 
-call s:ApplyUIStyles()
+augroup CustomUI
+    autocmd!
+    autocmd VimEnter,ColorScheme * call s:ApplyUIStyles()
+    autocmd VimEnter,WinEnter,BufWinEnter * if hlexists('BadWhitespace') | match BadWhitespace /\%u00a0/ | endif
+augroup END
 
 " -----------------------------------------------------------------------------
 " 5. Language and Localization (Armenian Support)
 " -----------------------------------------------------------------------------
-function! ToggleArmenian()
-        if &keymap ==# "armenian-phonetic_utf-8"
-                set keymap=
-                echo "Keymap: English"
-        else
-                set keymap=armenian-phonetic_utf-8
-                echo "Keymap: Armenian"
-        endif
+
+function! ToggleArmenian() abort
+    if &keymap ==# "armenian-phonetic_utf-8"
+        set keymap=
+        echo "Keymap: English"
+    else
+        set keymap=armenian-phonetic_utf-8
+        echo "Keymap: Armenian"
+    endif
 endfunction
 
-
-" Mappings for language switching
 nnoremap <C-L> :call ToggleArmenian()<CR>
 inoremap <C-L> <C-O>:call ToggleArmenian()<CR>
 
 " -----------------------------------------------------------------------------
-" 6. Programming Language Profiles
+" 6. Language Server Protocol (yegappan/lsp)
 " -----------------------------------------------------------------------------
 
-" Profile for C and C++ (Kernel/Strict style)
-function! s:InstigateCodingStyle()
-        setlocal formatoptions-=ro " Prevent auto-inserting comments on newline
-        setlocal lazyredraw
-        setlocal expandtab
-        setlocal softtabstop=8
-        setlocal tabstop=8
-        setlocal shiftwidth=8
-        setlocal textwidth=80
-        setlocal cindent
-        setlocal colorcolumn=+1
-        call s:IntializeLanguageServer()
+let s:clang_res = system("clang -print-resource-dir 2>/dev/null | tr -d '\n'")
+let s:clangd_args = [
+        \   '--background-index',
+        \   '--clang-tidy=false',
+        \   '--header-insertion=iwyu',
+        \   '--completion-style=detailed',
+        \   '--pch-storage=memory',
+        \   '--query-driver=**'
+        \ ]
+
+if !empty(s:clang_res) && v:shell_error == 0
+    call add(s:clangd_args, '-resource-dir=' . s:clang_res)
+endif
+
+let s:lspServers = [
+        \ {
+        \   'filetype': ['c', 'cpp', 'h', 'hpp'],
+        \   'path': 'clangd',
+        \   'args': s:clangd_args
+        \ }
+        \ ]
+
+let s:lspOpts = {
+        \ 'useBufferCompletion': v:true,
+        \ 'autoComplete': v:true,
+        \ 'omniComplete': v:true,
+        \ 'completionMatcher': 'fuzzy',
+        \ 'completionTextEdit': v:true,
+        \ 'filterCompletionDuplicates': v:true,
+        \
+        \ 'autoHighlightDiags': v:true,
+        \ 'highlightDiagInline': v:true,
+        \ 'showDiagWithSign': v:true,
+        \ 'showDiagWithVirtualText': v:false,
+        \ 'diagVirtualTextAlign': 'above',
+        \ 'showDiagInPopup': v:true,
+        \ 'showDiagOnStatusLine': v:false,
+        \
+        \ 'diagSignErrorText': '✘',
+        \ 'diagSignWarningText': '▲',
+        \ 'diagSignInfoText': '●',
+        \ 'diagSignHintText': '◆',
+        \
+        \ 'showSignature': v:true,
+        \ 'showInlayHints': v:true,
+        \ 'echoSignature': v:false,
+        \
+        \ 'autoHighlight': v:false,
+        \ 'hoverInPreview': v:false,
+        \
+        \ 'popupBorder': v:true,
+        \ 'popupBorderChars': ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
+        \
+        \ 'usePopupInCodeAction': v:true,
+        \ 'keepFocusInReferences': v:true,
+        \ 'keepFocusInDiags': v:true,
+        \
+        \ 'ignoreMissingServer': v:true
+        \ }
+
+augroup LspConfiguration
+    autocmd!
+    autocmd User LspSetup call LspOptionsSet(s:lspOpts)
+    autocmd User LspSetup call LspAddServer(s:lspServers)
+augroup END
+
+" LSP key mappings (buffer-local, set in C/C++ profile below)
+function! s:SetLspKeymaps() abort
+    nnoremap <buffer><silent> gd <Cmd>LspGotoDefinition<CR>
+    nnoremap <buffer><silent> gr <Cmd>LspShowReferences<CR>
+    nnoremap <buffer><silent> K  <Cmd>LspHover<CR>
+    nnoremap <buffer><silent> <leader>rn <Cmd>LspRename<CR>
+    nnoremap <buffer><silent> [d <Cmd>LspDiagPrev<CR>
+    nnoremap <buffer><silent> ]d <Cmd>LspDiagNext<CR>
 endfunction
 
-function! s:IntializeLanguageServer()
-        " Rename symbol across the whole project
-        nmap <leader>rn <Plug>(coc-rename)
+" -----------------------------------------------------------------------------
+" 7. Programming Language Profiles
+" -----------------------------------------------------------------------------
 
-        " Apply Code Action to the current line (e.g., fix-its, adding missing includes)
-        nmap <leader>ac <Plug>(coc-codeaction-line)
-        vmap <leader>ac <Plug>(coc-codeaction-selected)
-
-        " Formatting selected code
-        xmap <leader>f  <Plug>(coc-format-selected)
-        nmap <leader>f  <Plug>(coc-format-selected)
-
-        " Navigate diagnostics (errors/warnings)
-        nmap <silent> [g <Plug>(coc-diagnostic-prev)
-        nmap <silent> ]g <Plug>(coc-diagnostic-next)
-
-        " Highlight the symbol under the cursor and its usages
-        autocmd CursorHold * silent call CocActionAsync('highlight')
-
-        " Go to definition
-        nmap <silent> gd <Plug>(coc-definition)
-
-        function! ShowDocumentation()
-                if CocAction('hasProvider', 'hover')
-                        call CocActionAsync('doHover')
-                else
-                        call feedkeys('K', 'in')
-                endif
-        endfunction
+" Profile: C and C++ (Kernel/Strict style)
+function! s:ConfigureCppTools() abort
+    setlocal formatoptions-=ro          " No auto-inserting comment leaders
+    setlocal expandtab
+    setlocal softtabstop=8
+    setlocal tabstop=8
+    setlocal shiftwidth=8
+    setlocal textwidth=80
+    setlocal cindent
+    setlocal colorcolumn=+1
+    call s:SetLspKeymaps()
 endfunction
 
-
-" Profile for Web Technologies (JS/HTML)
-function! s:ToggleHtmlTools()
-        setlocal lazyredraw
-        setlocal expandtab
-        setlocal tabstop=2
-        setlocal shiftwidth=2
-        setlocal textwidth=80
-        setlocal colorcolumn=+1
+" Profile: Web Technologies (JS/HTML)
+function! s:ConfigureWebTools() abort
+    setlocal expandtab
+    setlocal tabstop=2
+    setlocal shiftwidth=2
+    setlocal textwidth=80
+    setlocal colorcolumn=+1
+    nnoremap <buffer> <Leader>ln <Cmd>call ToggleLiveServer()<CR>
 endfunction
 
-" Profile for LaTeX (Scientific writing)
-function! s:ConfigureVimtex()
-        let g:vimtex_view_method = 'zathura'
-        let g:vimtex_quickfix_open_on_warning = 0
-        let g:vimtex_quickfix_mode = 2
-        let g:vimtex_compiler_method = 'latexmk'
-        let g:vimtex_compiler_latexmk = {
-                     \ 'build_dir'  : '',
-                     \ 'callback'   : 1,
-                     \ 'continuous' : 1,
-                     \ 'executable' : 'latexmk',
-                     \ 'options'    : [
-                     \   '-pdfxe',
-                     \   '-verbose',
-                     \   '-file-line-error',
-                     \   '-synctex=1',
-                     \   '-interaction=nonstopmode',
-                     \ ],
-                     \ }
+" Profile: LaTeX (configured via g:vimtex_* above)
+function! s:ConfigureTeX() abort
+    setlocal textwidth=80
+    setlocal colorcolumn=+1
 endfunction
 
-" Automation: Apply profiles based on file extension
 augroup FileTypeProfiles
-        autocmd!
-        autocmd FileType c,cpp call s:InstigateCodingStyle()
-        autocmd FileType html,javascript call s:ToggleHtmlTools()
-        autocmd FileType tex call s:ConfigureVimtex()
+    autocmd!
+    autocmd FileType c,cpp call s:ConfigureCppTools()
+    autocmd FileType html,javascript call s:ConfigureWebTools()
+    autocmd FileType tex call s:ConfigureTeX()
 augroup END
 
 " -----------------------------------------------------------------------------
-" 7. Typing Assistants and Smart Mappings
+" 8. Live Server Integration (Web Development)
+" -----------------------------------------------------------------------------
+"
+" FIX: The --browser flag requires the ABSOLUTE PATH to the browser
+"      executable. Passing just the name 'nightly' caused live-server's
+"      internal `open` module (via child_process.exec) to fail silently
+"      to locate the binary, falling back to the default browser.
+"
+"      Resolution: use '/usr/bin/nightly' (the actual symlink target).
+
+let g:live_server_running = 0
+let s:live_server_job = v:null
+
+function! ToggleLiveServer() abort
+    if g:live_server_running == 0
+        let l:cmd = ['live-server', '--browser=/usr/bin/nightly']
+        let s:live_server_job = job_start(l:cmd, {
+        \   'stoponexit': 'term',
+        \   'out_io': 'null',
+        \   'err_io': 'null'
+        \ })
+
+        if job_status(s:live_server_job) ==# 'run'
+            let g:live_server_running = 1
+            echo "Live Server: Running"
+        else
+            echoerr "Live Server: Failed to start"
+        endif
+    else
+        if s:live_server_job != v:null && job_status(s:live_server_job) ==# 'run'
+            call job_stop(s:live_server_job, 'term')
+        endif
+        let g:live_server_running = 0
+        let s:live_server_job = v:null
+        echo "Live Server: Stopped"
+    endif
+endfunction
+
+" -----------------------------------------------------------------------------
+" 9. Typing Assistants and Smart Mappings
 " -----------------------------------------------------------------------------
 
-" Bracket Auto-closing
+" Bracket and quote auto-closing
 inoremap ( ()<Left>
 inoremap [ []<Left>
 inoremap { {}<Left>
 inoremap " ""<Left>
 inoremap ' ''<Left>
 
-" Smart Newline within curly braces
-inoremap <expr> <CR> getline('.')[col('.')-2:col('.')-1] == '{}' ? "\<CR>\<CR>\<Up>" : "\<CR>"
+" Enable completion menu globally, don't insert/select automatically
+set completeopt=menu,menuone,noselect
 
-" Smart Jump-out: Tab through pairs or perform normal Tab
-function! SkipPair()
-        let l:char = getline('.')[col('.') - 1]
-        if index([')', '}', ']', '"', "'", '>'], l:char) != -1
-                return "\<Right>"
-        else
-                return "\<Tab>"
-        endif
+" Smart newline within curly braces: { | } → { \n | \n }, also accept completion
+inoremap <expr> <CR> pumvisible() ? "\<C-Y>" : (getline('.')[col('.')-2:col('.')-1] == '{}' ? "\<CR>\<CR>\<Up>" : "\<CR>")
+
+" Smart jump-out: Tab skips over closing pairs, otherwise inserts Tab
+function! SkipPair() abort
+    let l:char = getline('.')[col('.') - 1]
+    if index([')', '}', ']', '"', "'", '>'], l:char) != -1
+        return "\<Right>"
+    else
+        return "\<Tab>"
+    endif
 endfunction
 
-inoremap <expr> <Tab> SkipPair()
+inoremap <expr> <Tab> pumvisible() ? "\<C-N>" : SkipPair()
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-P>" : "\<C-H>"
